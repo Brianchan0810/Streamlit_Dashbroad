@@ -99,32 +99,29 @@ elif main_dropdown == "Purchasing Behavior":
 
     else:
         column = feature_dict.get(feature_dropdown2)
-        fig = boxplot(filtered_df, item_dict, 3, 2, groupby=True, gb_column=column)
+        fig = boxplot(filtered_df, item_dict, 3, 2, group_by=True, gb_column=column)
 
     fig.update_layout(height=1200, width=1000)
     st.plotly_chart(fig)
 
 else:
-    feature_down3 = st.sidebar.selectbox("Group by Category:", ['None'] + list(feature_dict))
+    feature_dropdown3 = st.sidebar.selectbox("Group by Category:", ['None'] + list(feature_dict))
 
-    if feature_down3 in ['Income', 'Age', 'Days After Last Purchase']:
-        column = feature_dict.get(feature_down3)
+    if feature_dropdown3 in ['Income', 'Age', 'Days After Last Purchase']:
+        column = feature_dict.get(feature_dropdown3)
         slider = st.slider("Range", value=[0, int(df[column].max())])
         filtered_df = df[(df[column] > slider[0]) & (df[column] < slider[1])]
     else:
         filtered_df = df
 
-    if feature_down3 in ['None', 'Age', 'Income', 'Days After Last Purchase']:
+    if feature_dropdown3 in ['None', 'Age', 'Income', 'Days After Last Purchase']:
         agg_df = filtered_df[['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5']].sum()
         fig = px.bar(agg_df, x=agg_df.index, y=agg_df.values)
     else:
-        gb_df_dict = filtered_df.groupby(feature_dict.get(feature_down3))[['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5']].sum().to_dict('index')
-        rows = []
-        for main_key in gb_df_dict:
-            for sub_key, sub_value in gb_df_dict[main_key].items():
-                rows.append([main_key, sub_key, sub_value])
-        agg_df = pd.DataFrame(rows, columns=['feature', 'campaign', 'sum'])
-        fig = px.bar(agg_df, x='campaign', y='sum', color='feature')
+        gb_df = filtered_df.groupby(feature_dict.get(feature_dropdown3))[['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5']].sum().reset_index()
+        new_gb_df = pd.melt(gb_df, id_vars=[feature_dict.get(feature_dropdown3)], value_vars=['AcceptedCmp1', 'AcceptedCmp2', 'AcceptedCmp3', 'AcceptedCmp4', 'AcceptedCmp5'])
+        new_gb_df.columns = ['feature', 'campaign', 'sum']
+        fig = px.bar(new_gb_df, x='campaign', y='sum', color='feature')
 
     st.plotly_chart(fig)
 

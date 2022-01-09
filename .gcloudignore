@@ -1,5 +1,5 @@
-﻿*.csv
-test.ipynb
 .idea
 .ipynb_checkpoints
+.gitignore
 venv
+test.py
